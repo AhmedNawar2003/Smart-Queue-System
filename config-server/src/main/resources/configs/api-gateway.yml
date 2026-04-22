@@ -1,0 +1,217 @@
+server:
+  port: 8080
+  forward-headers-strategy: framework
+
+spring:
+  data:
+    redis:
+      host: localhost
+      port: 6379
+
+  cloud:
+    gateway:
+      globalcors:
+        corsConfigurations:
+          '[/**]':
+            allowedOrigins: "*"
+            allowedMethods:
+              - GET
+              - POST
+              - PUT
+              - DELETE
+              - PATCH
+              - OPTIONS
+            allowedHeaders: "*"
+            allowCredentials: false
+
+      discovery:
+        locator:
+          enabled: true
+          lower-case-service-id: true
+
+      routes:
+        # ── Auth Service ──────────────────────────────────
+        - id: auth-service
+          uri: lb://auth-service
+          predicates:
+            - Path=/api/v1/auth/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: auth-cb
+                fallbackUri: forward:/fallback/auth
+
+        # ── User Service ──────────────────────────────────
+        - id: user-service
+          uri: lb://user-service
+          predicates:
+            - Path=/api/v1/users/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: user-cb
+                fallbackUri: forward:/fallback/user
+
+        # ── Queue Service ─────────────────────────────────
+        - id: queue-service
+          uri: lb://queue-service
+          predicates:
+            - Path=/api/v1/queues/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: queue-cb
+                fallbackUri: forward:/fallback/queue
+
+        # ── Appointment Service ───────────────────────────
+        - id: appointment-service
+          uri: lb://appointment-service
+          predicates:
+            - Path=/api/v1/appointments/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: appointment-cb
+                fallbackUri: forward:/fallback/appointment
+
+        # ── Notification Service ──────────────────────────
+        - id: notification-service
+          uri: lb://notification-service
+          predicates:
+            - Path=/api/v1/notifications/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: notification-cb
+                fallbackUri: forward:/fallback/notification
+
+        # ── Analytics Service ─────────────────────────────
+        - id: analytics-service
+          uri: lb://analytics-service
+          predicates:
+            - Path=/api/v1/analytics/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: analytics-cb
+                fallbackUri: forward:/fallback/analytics
+
+        # ── Swagger Docs Routes ───────────────────────────
+        - id: auth-service-docs
+          uri: lb://auth-service
+          predicates:
+            - Path=/auth-service/v3/api-docs
+          filters:
+            - RewritePath=/auth-service/v3/api-docs, /v3/api-docs
+
+        - id: user-service-docs
+          uri: lb://user-service
+          predicates:
+            - Path=/user-service/v3/api-docs
+          filters:
+            - RewritePath=/user-service/v3/api-docs, /v3/api-docs
+
+        - id: queue-service-docs
+          uri: lb://queue-service
+          predicates:
+            - Path=/queue-service/v3/api-docs
+          filters:
+            - RewritePath=/queue-service/v3/api-docs, /v3/api-docs
+
+        - id: appointment-service-docs
+          uri: lb://appointment-service
+          predicates:
+            - Path=/appointment-service/v3/api-docs
+          filters:
+            - RewritePath=/appointment-service/v3/api-docs, /v3/api-docs
+
+        - id: notification-service-docs
+          uri: lb://notification-service
+          predicates:
+            - Path=/notification-service/v3/api-docs
+          filters:
+            - RewritePath=/notification-service/v3/api-docs, /v3/api-docs
+
+        - id: analytics-service-docs
+          uri: lb://analytics-service
+          predicates:
+            - Path=/analytics-service/v3/api-docs
+          filters:
+            - RewritePath=/analytics-service/v3/api-docs, /v3/api-docs
+
+eureka:
+  instance:
+    prefer-ip-address: true
+    ip-address: 127.0.0.1
+    hostname: localhost
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+
+jwt:
+  secret: smartqueue-secret-key-egypt-2024-very-long-and-secure-key
+
+resilience4j:
+  circuitbreaker:
+    instances:
+      auth-cb:
+        sliding-window-size: 10
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: 10s
+        permitted-number-of-calls-in-half-open-state: 5
+      user-cb:
+        sliding-window-size: 10
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: 10s
+      queue-cb:
+        sliding-window-size: 10
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: 10s
+      appointment-cb:
+        sliding-window-size: 10
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: 10s
+      notification-cb:
+        sliding-window-size: 10
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: 10s
+      analytics-cb:
+        sliding-window-size: 10
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: 10s
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    config-url: /v3/api-docs/swagger-config
+    urls:
+      - name: Auth Service
+        url: /auth-service/v3/api-docs
+      - name: User Service
+        url: /user-service/v3/api-docs
+      - name: Queue Service
+        url: /queue-service/v3/api-docs
+      - name: Appointment Service
+        url: /appointment-service/v3/api-docs
+      - name: Notification Service
+        url: /notification-service/v3/api-docs
+      - name: Analytics Service
+        url: /analytics-service/v3/api-docs
+  api-docs:
+    enabled: true
+
+management:
+  tracing:
+    sampling:
+      probability: 1.0   # 100% من الـ requests
+    zipkin:
+      tracing:
+        endpoint: http://localhost:9411/api/v2/spans
+  endpoints:
+    health:
+      show-details: always
+    web:
+      exposure:
+        include: health,info
+
+

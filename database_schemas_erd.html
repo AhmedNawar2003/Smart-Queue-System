@@ -1,0 +1,191 @@
+
+<h2 class="sr-only">Database schema ERDs for all microservices</h2>
+
+<div style="display:grid;gap:1.5rem;padding:1rem 0">
+
+  <!-- Auth DB -->
+  <div>
+    <p style="font-size:13px;font-weight:500;color:var(--color-text-secondary);margin:0 0 8px;text-transform:uppercase;letter-spacing:.04em">Auth DB</p>
+    <div id="erd-auth"></div>
+  </div>
+
+  <!-- User DB -->
+  <div>
+    <p style="font-size:13px;font-weight:500;color:var(--color-text-secondary);margin:0 0 8px;text-transform:uppercase;letter-spacing:.04em">User DB</p>
+    <div id="erd-user"></div>
+  </div>
+
+  <!-- Queue DB -->
+  <div>
+    <p style="font-size:13px;font-weight:500;color:var(--color-text-secondary);margin:0 0 8px;text-transform:uppercase;letter-spacing:.04em">Queue DB</p>
+    <div id="erd-queue"></div>
+  </div>
+
+  <!-- Appointment DB -->
+  <div>
+    <p style="font-size:13px;font-weight:500;color:var(--color-text-secondary);margin:0 0 8px;text-transform:uppercase;letter-spacing:.04em">Appointment DB</p>
+    <div id="erd-appt"></div>
+  </div>
+
+  <!-- Analytics DB -->
+  <div>
+    <p style="font-size:13px;font-weight:500;color:var(--color-text-secondary);margin:0 0 8px;text-transform:uppercase;letter-spacing:.04em">Analytics DB</p>
+    <div id="erd-analytics"></div>
+  </div>
+
+</div>
+
+<style>
+#erd-auth svg, #erd-user svg, #erd-queue svg, #erd-appt svg, #erd-analytics svg { width:100% !important; }
+</style>
+
+<script type="module">
+import mermaid from 'https://esm.sh/mermaid@11/dist/mermaid.esm.min.mjs';
+const dark = matchMedia('(prefers-color-scheme: dark)').matches;
+await document.fonts.ready;
+mermaid.initialize({
+  startOnLoad: false, theme: 'base',
+  fontFamily: '"Anthropic Sans", sans-serif',
+  themeVariables: {
+    darkMode: dark, fontSize: '13px',
+    fontFamily: '"Anthropic Sans", sans-serif',
+    lineColor: dark ? '#9c9a92' : '#73726c',
+    textColor: dark ? '#c2c0b6' : '#3d3d3a',
+  },
+});
+
+function roundNodes(containerId) {
+  document.querySelectorAll(`#${containerId} svg .node`).forEach(node => {
+    const firstPath = node.querySelector('path[d]');
+    if (!firstPath) return;
+    const d = firstPath.getAttribute('d');
+    const nums = d.match(/-?[\d.]+/g)?.map(Number);
+    if (!nums || nums.length < 8) return;
+    const xs = [nums[0],nums[2],nums[4],nums[6]], ys = [nums[1],nums[3],nums[5],nums[7]];
+    const x=Math.min(...xs),y=Math.min(...ys),w=Math.max(...xs)-x,h=Math.max(...ys)-y;
+    const rect = document.createElementNS('http://www.w3.org/2000/svg','rect');
+    rect.setAttribute('x',x); rect.setAttribute('y',y);
+    rect.setAttribute('width',w); rect.setAttribute('height',h); rect.setAttribute('rx','8');
+    for (const a of ['fill','stroke','stroke-width','class','style'])
+      if (firstPath.hasAttribute(a)) rect.setAttribute(a,firstPath.getAttribute(a));
+    firstPath.replaceWith(rect);
+  });
+  document.querySelectorAll(`#${containerId} svg .row-rect-odd path, #${containerId} svg .row-rect-even path`).forEach(p=>p.setAttribute('stroke','none'));
+}
+
+const diagrams = [
+  ['erd-auth', `erDiagram
+    USERS ||--o{ REFRESH_TOKENS : has
+    USERS ||--o{ OAUTH_ACCOUNTS : has
+    USERS {
+      uuid id PK
+      string email
+      string password_hash
+      string role
+      boolean is_verified
+      timestamp created_at
+    }
+    REFRESH_TOKENS {
+      uuid id PK
+      uuid user_id FK
+      string token
+      timestamp expires_at
+    }
+    OAUTH_ACCOUNTS {
+      uuid id PK
+      uuid user_id FK
+      string provider
+      string provider_id
+    }`],
+  ['erd-user', `erDiagram
+    USER_PROFILES ||--o{ USER_PREFERENCES : has
+    USER_PROFILES {
+      uuid id PK
+      uuid auth_user_id
+      string full_name
+      string phone
+      string national_id
+      string governorate
+      string photo_url
+      timestamp updated_at
+    }
+    USER_PREFERENCES {
+      uuid id PK
+      uuid user_id FK
+      string lang
+      boolean sms_enabled
+      boolean email_enabled
+    }`],
+  ['erd-queue', `erDiagram
+    SERVICE_CENTERS ||--o{ QUEUES : has
+    QUEUES ||--o{ QUEUE_ENTRIES : has
+    SERVICE_CENTERS {
+      uuid id PK
+      string name
+      string type
+      string address
+      string governorate
+      int capacity_per_day
+    }
+    QUEUES {
+      uuid id PK
+      uuid center_id FK
+      string date
+      string status
+      int current_position
+      int avg_service_minutes
+    }
+    QUEUE_ENTRIES {
+      uuid id PK
+      uuid queue_id FK
+      uuid user_id
+      int ticket_number
+      string status
+      timestamp joined_at
+      timestamp called_at
+    }`],
+  ['erd-appt', `erDiagram
+    APPOINTMENTS ||--o{ APPOINTMENT_LOGS : has
+    APPOINTMENTS {
+      uuid id PK
+      uuid user_id
+      uuid queue_entry_id
+      uuid center_id
+      string service_type
+      string status
+      timestamp scheduled_at
+      timestamp updated_at
+    }
+    APPOINTMENT_LOGS {
+      uuid id PK
+      uuid appointment_id FK
+      string action
+      string actor
+      timestamp timestamp
+    }`],
+  ['erd-analytics', `erDiagram
+    WAIT_TIME_RECORDS ||--o{ DAILY_REPORTS : aggregatedIn
+    WAIT_TIME_RECORDS {
+      uuid id PK
+      uuid center_id
+      uuid queue_id
+      int actual_wait_minutes
+      int estimated_wait_minutes
+      date record_date
+    }
+    DAILY_REPORTS {
+      uuid id PK
+      uuid center_id
+      date report_date
+      int total_served
+      float avg_wait_minutes
+      int no_shows
+    }`],
+];
+
+for (const [id, src] of diagrams) {
+  const { svg } = await mermaid.render(id+'-svg', src);
+  document.getElementById(id).innerHTML = svg;
+  roundNodes(id);
+}
+</script>

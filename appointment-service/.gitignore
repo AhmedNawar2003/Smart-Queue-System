@@ -1,0 +1,87 @@
+# ====================================================================
+# --- 1. مفاتيح التشفير ورموز الدخول (JWT & Encryption) ---
+# ====================================================================
+*.key
+*.pem
+*.pub
+*.asc
+*.jks
+*.p12
+*.pfx
+*.truststore
+
+# ====================================================================
+# --- 2. أسرار Google OAuth2 و الـ APIs الخارجية ---
+# ====================================================================
+google-services.json
+client_secret_*.json
+credentials.json
+
+# ====================================================================
+# --- 3. ملفات الإعدادات الحساسة (Spring Boot Profiles) ---
+# ====================================================================
+**/src/main/resources/application-secret.yml
+**/src/main/resources/application-secret.properties
+**/src/main/resources/application-local.yml
+**/src/main/resources/application-dev.yml
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# ====================================================================
+# --- 4. مخرجات البناء (Build Artifacts) ---
+# ====================================================================
+target/
+build/
+*.jar
+*.class
+*.war
+*.ear
+/dist/
+/nbbuild/
+/nbdist/
+HELP.md
+.mvn/wrapper/maven-wrapper.jar
+
+# استثناءات خاصة لإبقاء بنية المجلدات إذا لزم الأمر
+!**/src/main/**/target/
+!**/src/test/**/target/
+!**/src/main/**/build/
+!**/src/test/**/build/
+
+# ====================================================================
+# --- 5. إعدادات بيئات التطوير (IDEs) ---
+# ====================================================================
+
+### IntelliJ IDEA ###
+.idea
+*.iws
+*.iml
+*.ipr
+out/
+
+### STS / Eclipse ###
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+
+### VS Code ###
+.vscode/
+
+### NetBeans ###
+/nbproject/private/
+/.nb-gradle/
+
+# ====================================================================
+# --- 6. البنية التحتية والسجلات (Infrastructure & Logs) ---
+# ====================================================================
+pgdata/
+redisdata/
+kafka-logs/
+*.log

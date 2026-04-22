@@ -1,0 +1,168 @@
+
+<h2 class="sr-only">REST API endpoints and project folder structure reference</h2>
+<style>
+.tabs { display:flex; gap:0; border-bottom:0.5px solid var(--color-border-tertiary); margin-bottom:1rem; }
+.tab { padding:8px 16px; font-size:13px; cursor:pointer; border:none; background:none; color:var(--color-text-secondary); border-bottom:2px solid transparent; margin-bottom:-0.5px; }
+.tab.active { color:var(--color-text-primary); border-bottom-color:var(--color-text-primary); font-weight:500; }
+.panel { display:none; } .panel.active { display:block; }
+.method { display:inline-block; font-size:11px; font-weight:500; padding:2px 7px; border-radius:4px; min-width:50px; text-align:center; margin-right:8px; }
+.GET    { background:#EAF3DE; color:#3B6D11; }
+.POST   { background:#E6F1FB; color:#185FA5; }
+.PUT    { background:#FAEEDA; color:#854F0B; }
+.DELETE { background:#FCEBEB; color:#A32D2D; }
+.PATCH  { background:#FBEAF0; color:#993556; }
+.ep { display:flex; align-items:center; padding:7px 0; border-bottom:0.5px solid var(--color-border-tertiary); font-size:13px; }
+.ep:last-child { border-bottom:none; }
+.path { font-family:var(--font-mono); color:var(--color-text-primary); }
+.desc { color:var(--color-text-secondary); margin-left:auto; font-size:12px; }
+.section-head { font-size:11px; font-weight:500; letter-spacing:.06em; color:var(--color-text-tertiary); margin:1rem 0 4px; text-transform:uppercase; }
+.tree { font-family:var(--font-mono); font-size:12px; line-height:1.8; color:var(--color-text-secondary); }
+.tree .dir { color:var(--color-text-primary); font-weight:500; }
+.tree .comment { color:var(--color-text-tertiary); font-size:11px; }
+</style>
+
+<div class="tabs">
+  <button class="tab active" onclick="switchTab('api')">API Endpoints</button>
+  <button class="tab" onclick="switchTab('folder')">Folder Structure</button>
+</div>
+
+<!-- API PANEL -->
+<div id="api" class="panel active">
+
+  <p class="section-head">Auth Service — /api/v1/auth</p>
+  <div class="ep"><span class="method POST">POST</span><span class="path">/register</span><span class="desc">Register new user</span></div>
+  <div class="ep"><span class="method POST">POST</span><span class="path">/login</span><span class="desc">Login, returns JWT</span></div>
+  <div class="ep"><span class="method POST">POST</span><span class="path">/refresh</span><span class="desc">Refresh access token</span></div>
+  <div class="ep"><span class="method POST">POST</span><span class="path">/logout</span><span class="desc">Invalidate refresh token</span></div>
+  <div class="ep"><span class="method GET">GET</span><span class="path">/oauth2/authorize/google</span><span class="desc">Google OAuth2 redirect</span></div>
+  <div class="ep"><span class="method POST">POST</span><span class="path">/verify-email</span><span class="desc">Verify email token</span></div>
+
+  <p class="section-head">User Service — /api/v1/users</p>
+  <div class="ep"><span class="method GET">GET</span><span class="path">/me</span><span class="desc">Current user profile</span></div>
+  <div class="ep"><span class="method PUT">PUT</span><span class="path">/me</span><span class="desc">Update profile</span></div>
+  <div class="ep"><span class="method GET">GET</span><span class="path">/{id}</span><span class="desc">Get user by ID (admin)</span></div>
+  <div class="ep"><span class="method GET">GET</span><span class="path">/</span><span class="desc">List all users (admin)</span></div>
+  <div class="ep"><span class="method PATCH">PATCH</span><span class="path">/{id}/role</span><span class="desc">Change user role (admin)</span></div>
+  <div class="ep"><span class="method DELETE">DELETE</span><span class="path">/{id}</span><span class="desc">Delete user (admin)</span></div>
+
+  <p class="section-head">Queue Service — /api/v1/queues</p>
+  <div class="ep"><span class="method POST">POST</span><span class="path">/</span><span class="desc">Create queue for center+date</span></div>
+  <div class="ep"><span class="method GET">GET</span><span class="path">/{id}</span><span class="desc">Get queue details</span></div>
+  <div class="ep"><span class="method GET">GET</span><span class="path">/centers/{centerId}/today</span><span class="desc">Today's active queue</span></div>
+  <div class="ep"><span class="method POST">POST</span><span class="path">/{id}/join</span><span class="desc">Join queue → returns ticket</span></div>
+  <div class="ep"><span class="method GET">GET</span><span class="path">/{id}/position/{ticketNo}</span><span class="desc">Current position + ETA</span></div>
+  <div class="ep"><span class="method POST">POST</span><span class="path">/{id}/next</span><span class="desc">Call next (staff only)</span></div>
+  <div class="ep"><span class="method POST">POST</span><span class="path">/{id}/skip/{ticketNo}</span><span class="desc">Skip absent user (staff)</span></div>
+  <div class="ep"><span class="method GET">GET</span><span class="path">/ws/{queueId}</span><span class="desc">WebSocket — live updates</span></div>
+
+  <p class="section-head">Appointment Service — /api/v1/appointments</p>
+  <div class="ep"><span class="method POST">POST</span><span class="path">/</span><span class="desc">Book appointment</span></div>
+  <div class="ep"><span class="method GET">GET</span><span class="path">/me</span><span class="desc">My appointments</span></div>
+  <div class="ep"><span class="method GET">GET</span><span class="path">/{id}</span><span class="desc">Appointment details</span></div>
+  <div class="ep"><span class="method PUT">PUT</span><span class="path">/{id}/reschedule</span><span class="desc">Reschedule appointment</span></div>
+  <div class="ep"><span class="method DELETE">DELETE</span><span class="path">/{id}</span><span class="desc">Cancel appointment</span></div>
+  <div class="ep"><span class="method GET">GET</span><span class="path">/centers/{centerId}</span><span class="desc">Center's appointments (staff)</span></div>
+
+  <p class="section-head">Notification Service — /api/v1/notifications</p>
+  <div class="ep"><span class="method GET">GET</span><span class="path">/me</span><span class="desc">My notifications</span></div>
+  <div class="ep"><span class="method PATCH">PATCH</span><span class="path">/{id}/read</span><span class="desc">Mark as read</span></div>
+  <div class="ep"><span class="method POST">POST</span><span class="path">/send</span><span class="desc">Manual send (admin)</span></div>
+
+  <p class="section-head">Analytics Service — /api/v1/analytics</p>
+  <div class="ep"><span class="method GET">GET</span><span class="path">/centers/{id}/report</span><span class="desc">Daily report for center</span></div>
+  <div class="ep"><span class="method GET">GET</span><span class="path">/centers/{id}/wait-times</span><span class="desc">Historical wait times</span></div>
+  <div class="ep"><span class="method GET">GET</span><span class="path">/summary</span><span class="desc">System-wide dashboard (admin)</span></div>
+
+</div>
+
+<!-- FOLDER PANEL -->
+<div id="folder" class="panel">
+<pre class="tree">
+<span class="dir">smart-queue-system/</span>
+├── <span class="dir">infrastructure/</span>
+│   ├── <span class="dir">eureka-server/</span>
+│   │   └── src/main/java/…/EurekaServerApplication.java
+│   ├── <span class="dir">config-server/</span>
+│   │   ├── src/main/resources/config/  <span class="comment"># per-service YMLs</span>
+│   │   └── src/main/java/…/ConfigServerApplication.java
+│   └── <span class="dir">api-gateway/</span>
+│       ├── src/main/resources/application.yml  <span class="comment"># routes</span>
+│       └── src/main/java/…/
+│           ├── ApiGatewayApplication.java
+│           └── filter/JwtAuthenticationFilter.java
+│
+├── <span class="dir">services/</span>
+│   ├── <span class="dir">auth-service/</span>
+│   │   └── src/main/java/…/auth/
+│   │       ├── AuthServiceApplication.java
+│   │       ├── controller/AuthController.java
+│   │       ├── service/AuthService.java
+│   │       ├── service/JwtService.java
+│   │       ├── security/SecurityConfig.java
+│   │       ├── security/OAuth2SuccessHandler.java
+│   │       ├── model/User.java
+│   │       ├── model/RefreshToken.java
+│   │       ├── repository/UserRepository.java
+│   │       └── dto/  <span class="comment"># LoginRequest, RegisterRequest, TokenResponse</span>
+│   │
+│   ├── <span class="dir">user-service/</span>
+│   │   └── src/main/java/…/user/
+│   │       ├── controller/UserController.java
+│   │       ├── service/UserService.java
+│   │       ├── model/UserProfile.java
+│   │       └── repository/UserProfileRepository.java
+│   │
+│   ├── <span class="dir">queue-service/</span>
+│   │   └── src/main/java/…/queue/
+│   │       ├── controller/QueueController.java
+│   │       ├── controller/QueueWebSocketController.java
+│   │       ├── service/QueueService.java
+│   │       ├── service/WaitTimeEstimator.java
+│   │       ├── event/QueueEventProducer.java  <span class="comment"># Kafka</span>
+│   │       ├── model/Queue.java
+│   │       ├── model/QueueEntry.java
+│   │       └── repository/
+│   │
+│   ├── <span class="dir">appointment-service/</span>
+│   │   └── src/main/java/…/appointment/
+│   │       ├── controller/AppointmentController.java
+│   │       ├── service/AppointmentService.java
+│   │       ├── client/QueueServiceClient.java  <span class="comment"># OpenFeign</span>
+│   │       ├── event/AppointmentEventProducer.java
+│   │       ├── model/Appointment.java
+│   │       └── repository/AppointmentRepository.java
+│   │
+│   ├── <span class="dir">notification-service/</span>
+│   │   └── src/main/java/…/notification/
+│   │       ├── consumer/AppointmentEventConsumer.java
+│   │       ├── consumer/QueueEventConsumer.java
+│   │       ├── service/EmailService.java
+│   │       ├── service/SmsService.java  <span class="comment"># Vonage/Twilio</span>
+│   │       └── model/Notification.java
+│   │
+│   └── <span class="dir">analytics-service/</span>
+│       └── src/main/java/…/analytics/
+│           ├── controller/AnalyticsController.java
+│           ├── service/ReportService.java
+│           ├── consumer/QueueEventConsumer.java
+│           └── model/WaitTimeRecord.java
+│
+├── <span class="dir">docker/</span>
+│   ├── docker-compose.yml        <span class="comment"># all services + Kafka + Redis + PGs</span>
+│   └── docker-compose.dev.yml
+│
+├── <span class="dir">.github/workflows/</span>
+│   └── ci-cd.yml                 <span class="comment"># GitHub Actions</span>
+│
+└── README.md
+</pre>
+</div>
+
+<script>
+function switchTab(name) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.getElementById(name).classList.add('active');
+  event.currentTarget.classList.add('active');
+}
+</script>
